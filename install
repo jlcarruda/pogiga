@@ -28,7 +28,7 @@ fi
 cp -r $(pwd) $config_path 
 
 if [ -e "$bashrc_file" ]; then
-  if ! grep -q "alias pcf=pogiga" "$bashrc_file"; then
-    echo "alias pcf=pogiga" >> "$bashrc_file"
+  if ! grep -q "alias pgg=pogiga" "$bashrc_file"; then
+    echo "alias pgg=pogiga" >> "$bashrc_file"
   fi
 fi
