@@ -1,0 +1,8 @@
+#!/bin/env bash
+
+
+# if [ -z "${SOPS_KMS_ARN}" ]; then
+#   echo "export SOPS_KMS_ARN=${SOPS_KMS_ARN}"
+# fi
+
+# zsh

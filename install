@@ -1,0 +1,34 @@
+#!/bin/env bash
+
+bashrc_file="$HOME/.bashrc"
+local_bin="$HOME/.local/bin/"
+pogiga_path="$local_bin/pogiga"
+config_path="$HOME/.config"
+
+{
+  DOCKER_BUILDKIT=1 docker build --no-cache -t pogiga .
+
+  if [ $? -ne 0 ]; then
+    exit 1;
+  fi
+}
+
+if [ ! -e "$pogiga_path" ]; then
+  cp ./pogiga "$pogiga_path"
+  cp ./pogiga-update "$local_bin/pogiga-update"
+  cp ./install "$local_bin/pogiga-install"
+  cp ./uninstall "$local_bin/pogiga-uninstall"
+fi
+
+# Remoção de configs desatualizadas
+if [ -e "$config_path/pogiga" ]; then
+  rm -rf "$config_path/pogiga"
+fi
+
+cp -r $(pwd) $config_path 
+
+if [ -e "$bashrc_file" ]; then
+  if ! grep -q "alias pcf=pogiga" "$bashrc_file"; then
+    echo "alias pcf=pogiga" >> "$bashrc_file"
+  fi
+fi

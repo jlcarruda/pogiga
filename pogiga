@@ -1,0 +1,47 @@
+#!/bin/env bash
+self=$0
+
+# VARIABLES
+AWS_CREDENTIALS=$HOME/.aws/credentials
+SSH_CREDENTIALS=$HOME/.ssh
+KUBE_CREDENTIALS=$HOME/.kube
+
+# FUNCTIONS
+show_help () {
+  cat <<END_HELP
+Uso: $self [-a caminho_creds_aws] [-k caminho_kubernetes] [-s caminho_ssh] [-m kms_arn] [...]
+
+POGIGA é uma CLI para a FC que roda um container docker com todas as ferramentas necessárias para atividades DEVOPS.
+
+Opções:
+	-a: Caminho para arquivo AWS Credentials (default: \$HOME/.aws/credentials)
+  -k: Caminho para DIRETORIO de configurações Kubernetes (default: \$HOME/.kube)
+  -s: Caminho para DIRETORIO de configurações SSH (default: \$HOME/.ssh)
+  -m: Valor a ser atribuido a variável SOPS_KMS_ARN
+  -h: Este menu de ajuda
+
+END_HELP
+}
+
+while getopts ha:k:s: flag;
+do
+	case "${flag}" in
+		a) AWS_CREDENTIALS=${OPTARG};;
+		k) KUBE_CREDENTIALS=${OPTARG};;
+		s) SSH_CREDENTIALS=${OPTARG};;
+    m) SOPS_KMS_ARN_OPTION=${OPTARG};;
+		h) show_help; exit;;
+		\?) show_help; exit 1;;
+	esac
+done
+
+if [[ -z ${SOPS_KMS_ARN_OPTION} ]]; then
+  SOPS_KMS_ARN_OPTION=""
+fi
+
+pogiga-update
+docker run --rm -it --privileged -e SOPS_KMS_ARN=$SOPS_KMS_ARN_OPTION \
+  -v $(pwd):/app \
+  -v $KUBE_CREDENTIALS:/root/.kube \
+  -v $AWS_CREDENTIALS:/root/.aws/credentials:ro \
+  -v $SSH_CREDENTIALS:/root/.ssh pogiga

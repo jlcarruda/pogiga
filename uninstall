@@ -1,0 +1,37 @@
+#!/bin/env bash
+
+bashrc_file="$HOME/.bashrc"
+local_bin="$HOME/.local/bin/"
+pogiga_path="$local_bin/pogiga"
+pogiga_repo_path="$HOME/.config/pogiga"
+
+# Remoção de imagem
+docker image rm pogiga:latest
+
+# Remoção do repo
+rm -rf $pogiga_repo_path
+
+# Remoção de executaveis
+if [ -e "$pogiga_path" ]; then
+  rm $pogiga_path
+fi
+if [ -e "$local_bin/pogiga-update" ]; then
+  rm $local_bin/pogiga-update
+fi
+if [ -e "$local_bin/pogiga-install" ]; then
+  rm $local_bin/pogiga-install
+fi
+if [ -e "$local_bin/pogiga-uninstall" ]; then
+  rm $local_bin/pogiga-uninstall
+fi
+
+# Remoção de ENV e alias
+alias_line=$(grep -n "alias pgg=pogiga" "$bashrc_file" | cut -d':' -f1)
+if [ -n "$alias_line" ]; then
+  sed -i "${alias_line}d" "$bashrc_file"
+fi
+
+version_line=$(grep -n "POGIGA_REPO_PATH" "$bashrc_file" | cut -d':' -f1)
+if [ -n "$version_line" ]; then
+  sed -i "${version_line}d" "$bashrc_file"
+fi

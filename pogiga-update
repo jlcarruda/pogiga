@@ -1,0 +1,10 @@
+#!/bin/env bash
+
+POGIGA_REPO_PATH="$HOME/.config/pogiga"
+git -C "$POGIGA_REPO_PATH" fetch --all 1&>/dev/null 
+UPDATE_AVAILABLE=$(git -C "$POGIGA_REPO_PATH" status -uno | grep -c 'Your branch is behind');
+if [[ ! $UPDATE_AVAILABLE -eq "0" ]]; then
+  echo "Updating POGIGA..."
+  git -C "$POGIGA_REPO_PATH" pull
+  docker build -t pogiga $POGIGA_REPO_PATH
+fi
