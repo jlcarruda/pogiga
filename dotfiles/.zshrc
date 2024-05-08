@@ -27,6 +27,23 @@ if [ ! -d "/app/.terraform" ] && ls -la /app | grep -q tf; then
   tf init
 fi
 
+# Auto initialize 
+declare -A valid_configs
+valid_configs=( ["aws_profile"]="AWS_PROFILE" ["kms_arn"]="SOPS_KMS_ARN")
+if [ -f "/app/.pogiga" ]; then
+  while IFS== read -r key value; do
+    key=`echo $key | sed 's/ *$//g'`;
+    if [[ -z ${valid_configs[${key}]} ]]; then
+      echo "Invalid $key on .pogiga file. Ignoring..."
+      continue;
+    fi;
+    env_var=`echo $valid_configs[$key]`
+    value=`echo $value | sed 's/ *$//g'`;
+    export "$env_var"="$value";  
+  done </app/.pogiga
+fi
+
+# Set SOPS_KMS_ARN based on files if no options was passed
 if [[ -z ${SOPS_KMS_ARN} ]]; then
   while IFS= read -r -d '' file; do
     if [[ $file == *.sops.* ]]; then

@@ -1,4 +1,4 @@
-# POGIGA (Pocket Giga)
+# POGIGA
 
 A project that aims to have all the necessary tools to work with your cloud infrastructure in a Docker container. In addition, the project fetches the host cloud configurations (.aws, .kube, .ssh and current directory), and mounts them as volumes inside the container, to facilitate the use of the tools.
 
@@ -10,10 +10,11 @@ A project that aims to have all the necessary tools to work with your cloud infr
 - SOPS
 - PACU (cloud security testing tool)
 - TOFU (opensource alternative to Terraform)
+- AGE
 
 ## How to use?
 
-- After cloning this repository, run the `install` file.
+- After cloning this repository, execute the `install` file.
 
 ```shell
 ./install
@@ -64,5 +65,6 @@ SOPS in POGIGA only supports AWS KMS keys for now.
 
 ## Roadmap
 
-- [ ] Automatically read `.pogiga` file on mounting for automatic configuration
+- [x] Automatically read `.pogiga` file on mounting for automatic configuration
 - [ ] Addition of support for AGE encryption with SOPS
+- [ ] Implement gitlabci for testing build

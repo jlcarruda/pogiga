@@ -5,13 +5,13 @@ local_bin="$HOME/.local/bin/"
 pogiga_path="$local_bin/pogiga"
 pogiga_repo_path="$HOME/.config/pogiga"
 
-# Remoção de imagem
+# Image removal
 docker image rm pogiga:latest
 
-# Remoção do repo
+# Repo removal
 rm -rf $pogiga_repo_path
 
-# Remoção de executaveis
+# Executables removal
 if [ -e "$pogiga_path" ]; then
   rm $pogiga_path
 fi
@@ -25,7 +25,7 @@ if [ -e "$local_bin/pogiga-uninstall" ]; then
   rm $local_bin/pogiga-uninstall
 fi
 
-# Remoção de ENV e alias
+# env vars and alias removal
 alias_line=$(grep -n "alias pgg=pogiga" "$bashrc_file" | cut -d':' -f1)
 if [ -n "$alias_line" ]; then
   sed -i "${alias_line}d" "$bashrc_file"
