@@ -5,6 +5,7 @@ self=$0
 AWS_CREDENTIALS=$HOME/.aws/credentials
 SSH_CREDENTIALS=$HOME/.ssh
 KUBE_CREDENTIALS=$HOME/.kube
+OCI_CREDENTIALS=$HOME/.oci
 
 # FUNCTIONS
 show_help () {
@@ -44,4 +45,5 @@ docker run --rm -it --privileged -e SOPS_KMS_ARN=$SOPS_KMS_ARN_OPTION \
   -v $(pwd):/app \
   -v $KUBE_CREDENTIALS:/root/.kube \
   -v $AWS_CREDENTIALS:/root/.aws/credentials:ro \
+  -v $OCI_CREDENTIALS:/root/.oci:ro \
   -v $SSH_CREDENTIALS:/root/.ssh pogiga
