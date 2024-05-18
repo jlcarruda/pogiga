@@ -67,4 +67,4 @@ SOPS in POGIGA only supports AWS KMS keys for now.
 
 - [x] Automatically read `.pogiga` file on mounting for automatic configuration
 - [ ] Addition of support for AGE encryption with SOPS
-- [ ] Implement gitlabci for testing build
+- [ ] Implement Github Workflow for testing build

@@ -1,6 +1,7 @@
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
+eval $(ssh-agent) 1&>/dev/null
 export AWS_PROFILE=$(head -1 ~/.aws/credentials | tr -d '[]')
 
 plugins=(
@@ -29,9 +30,12 @@ fi
 
 # Auto initialize 
 declare -A valid_configs
-valid_configs=( ["aws_profile"]="AWS_PROFILE" ["kms_arn"]="SOPS_KMS_ARN")
+valid_configs=( ["env_aws_profile"]="AWS_PROFILE" ["env_kms_arn"]="SOPS_KMS_ARN")
 if [ -f "/app/.pogiga" ]; then
   while IFS== read -r key value; do
+    # IFS=_ read -ra key_splitted <<< $key
+    # variable_type=$key_splitted[0];
+    # fi
     key=`echo $key | sed 's/ *$//g'`;
     if [[ -z ${valid_configs[${key}]} ]]; then
       echo "Invalid $key on .pogiga file. Ignoring..."
@@ -51,5 +55,5 @@ if [[ -z ${SOPS_KMS_ARN} ]]; then
       echo "SOPS file detected. Setted KMS ARN as environment variable";
       break;
     fi
-  done <<(find "$(pwd)" -type f -print0)
+  done <<<(find "$(pwd)" -type f -print0)
 fi
