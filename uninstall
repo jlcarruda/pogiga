@@ -1,7 +1,7 @@
 #!/bin/env bash
 
 bashrc_file="$HOME/.bashrc"
-local_bin="$HOME/.local/bin/"
+local_bin="/usr/local/bin/"
 pogiga_path="$local_bin/pogiga"
 pogiga_repo_path="$HOME/.config/pogiga"
 
