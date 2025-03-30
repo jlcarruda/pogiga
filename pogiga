@@ -6,6 +6,7 @@ AWS_CREDENTIALS=$HOME/.aws/credentials
 SSH_CREDENTIALS=$HOME/.ssh
 KUBE_CREDENTIALS=$HOME/.kube
 OCI_CREDENTIALS=$HOME/.oci
+TARGET=ubuntu
 
 # FUNCTIONS
 show_help () {
@@ -19,31 +20,34 @@ Opções:
   -k: Caminho para DIRETORIO de configurações Kubernetes (default: \$HOME/.kube)
   -s: Caminho para DIRETORIO de configurações SSH (default: \$HOME/.ssh)
   -m: Valor a ser atribuido a variável SOPS_KMS_ARN
+  -t: OS alvo a ser buildado (default: alpine. Opções: ubuntu)
   -h: Este menu de ajuda
 
 END_HELP
 }
 
-while getopts ha:k:s: flag;
+while getopts ha:k:s:t: flag;
 do
 	case "${flag}" in
 		a) AWS_CREDENTIALS=${OPTARG};;
 		k) KUBE_CREDENTIALS=${OPTARG};;
 		s) SSH_CREDENTIALS=${OPTARG};;
     m) SOPS_KMS_ARN_OPTION=${OPTARG};;
+    t) TARGET=${OPTARG};;
 		h) show_help; exit;;
 		\?) show_help; exit 1;;
 	esac
 done
 
-if [[ -z ${SOPS_KMS_ARN_OPTION} ]]; then
-  SOPS_KMS_ARN_OPTION=""
-fi
+# if [[ -z ${SOPS_KMS_ARN_OPTION} ]]; then
+#   SOPS_KMS_ARN_OPTION=""
+# fi
 
-pogiga-update
-docker run --rm -it --privileged -e SOPS_KMS_ARN=$SOPS_KMS_ARN_OPTION \
+# pogiga-update
+docker container run --rm --name pogiga-$TARGET -it --privileged -e SOPS_KMS_ARN=$SOPS_KMS_ARN_OPTION \
   -v $(pwd):/app \
-  -v $KUBE_CREDENTIALS:/root/.kube \
-  -v $AWS_CREDENTIALS:/root/.aws/credentials:ro \
-  -v $OCI_CREDENTIALS:/root/.oci:ro \
-  -v $SSH_CREDENTIALS:/root/.ssh pogiga
+  -v $KUBE_CREDENTIALS:/home/op/.kube \
+  -v $AWS_CREDENTIALS:/home/op/.aws/credentials:ro \
+  -v $OCI_CREDENTIALS:/home/op/.oci:ro \
+  -v $SSH_CREDENTIALS:/home/op/.ssh \
+  pogiga-$TARGET

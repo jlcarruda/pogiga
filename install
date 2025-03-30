@@ -1,14 +1,35 @@
 #!/bin/env bash
 
 bashrc_file="$HOME/.bashrc"
-local_bin="/usr/local/bin"
+# local_bin="/usr/local/bin"
+local_bin="$HOME/.local/bin"
 pogiga_path="$local_bin/pogiga"
 config_path="$HOME/.config"
 
+# VARIABLES
+TARGET="alpine"
+
+while getopts ht: flag;
+do
+	case "${flag}" in
+		t) TARGET=${OPTARG};;
+		h) show_help; exit;;
+		# \?) show_help; exit 1;;
+	esac
+done
+
+build_target_stage () {
+  #TODO: cant spawn two instances with different names. Needs to refactor later
+  DOCKER_BUILDKIT=1 docker compose build --no-cache $TARGET #-t pogiga
+  # DOCKER_BUILDKIT=1 docker build --no-cache --target $TARGET -t pogiga .
+}
+
 {
-  DOCKER_BUILDKIT=1 docker build --no-cache -t pogiga .
+  build_target_stage
 
   if [ $? -ne 0 ]; then
+    echo
+    echo "[POGIGA] Image build for stage ${TARGET} failed"
     exit 1;
   fi
 }
@@ -26,7 +47,7 @@ if [ -e "$config_path/pogiga" ]; then
   rm -rf "$config_path/pogiga"
 fi
 
-cp -r $(pwd) $config_path/pogiga 
+cp -r $(pwd) $config_path 
 
 if [ -e "$bashrc_file" ]; then
   if ! grep -q "alias pgg=pogiga" "$bashrc_file"; then

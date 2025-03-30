@@ -1,13 +1,26 @@
 #!/bin/env bash
 
 bashrc_file="$HOME/.bashrc"
-local_bin="/usr/local/bin/"
+local_bin="$HOME/.local/bin"
 pogiga_path="$local_bin/pogiga"
 pogiga_repo_path="$HOME/.config/pogiga"
+TARGET="alpine"
+
+while getopts ht: flag;
+do
+	case "${flag}" in
+		t) TARGET=${OPTARG};;
+		h) show_help; exit;;
+		# \?) show_help; exit 1;;
+	esac
+done
 
 # Image removal
-docker image rm pogiga:latest
-
+docker compose down --volumes
+does_image_exists=$(docker image ls | grep -c "pogiga-$TARGET")
+if [ $does_image_exists -gt 0 ]; then
+  docker image rm pogiga-$TARGET:latest
+fi
 # Repo removal
 rm -rf $pogiga_repo_path
 
