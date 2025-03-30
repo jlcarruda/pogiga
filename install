@@ -20,7 +20,7 @@ done
 
 build_target_stage () {
   #TODO: cant spawn two instances with different names. Needs to refactor later
-  DOCKER_BUILDKIT=1 docker compose build --no-cache $TARGET #-t pogiga
+  DOCKER_BUILDKIT=1 docker compose build $TARGET #-t pogiga
   # DOCKER_BUILDKIT=1 docker build --no-cache --target $TARGET -t pogiga .
 }
 

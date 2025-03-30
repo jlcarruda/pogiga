@@ -8,62 +8,57 @@ RUN adduser op
 WORKDIR /home/op/app
 RUN chown op:op /home/op/app
 
-# RUN curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.3/cosign_2.4.3_amd64.deb && \
-#   dpkg -i cosign_2.4.3_amd64.deb
+RUN curl -LO https://github.com/sigstore/cosign/releases/download/v2.4.3/cosign_2.4.3_amd64.deb && \
+  dpkg -i cosign_2.4.3_amd64.deb
 
-# ===========================================
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+  unzip awscliv2.zip && \
+  ./aws/install -b /home/op/.local/bin -i /usr/local/aws-cli && \
+  rm -rf ./aws
 
-# RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-#   unzip awscliv2.zip && \
-#   ./aws/install -b /usr/local/bin -i /usr/local/aws-cli && \
-#   rm -rf ./aws
+COPY --from=golang:1.13-alpine /usr/local/go/ /usr/local/go/
+ENV GOROOT="/usr/local/go" \
+ GOPATH="/home/op/go" \
+ PATH="${GOROOT}/bin:${PATH}" \
+ ZSH_CUSTOM="/home/op/.oh-my-zsh/custom"
 
-# COPY --from=golang:1.13-alpine /usr/local/go/ /usr/local/go/
-# ENV GOROOT="/usr/local/go" \
-#  GOPATH="/home/op/go" \
-#  PATH="${GOROOT}/bin:${PATH}" \
-#  ZSH_CUSTOM="/home/op/.oh-my-zsh/custom"
+RUN mkdir -p $GOPATH/src && mkdir -p /home/op/.config && chown op:op /home/op/.config  
 
-# RUN mkdir -p $GOPATH/src && mkdir -p /home/op/.config && chown op:op /home/op/.config  
+# Download TF
+RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip -O terraform.zip && \
+ unzip terraform.zip && rm terraform.zip && \
+ chown op:op terraform && chmod 550 terraform && \
+ mv terraform /home/op/.local/bin/terraform
 
-# # Download TF
-# RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip -O terraform.zip && \
-#  unzip terraform.zip && rm terraform.zip && \
-#  chown op:op terraform && chmod 550 terraform && \
-#  mv terraform /usr/local/bin/terraform
+RUN wget --secure-protocol=TLSv1_2 --https-only https://get.opentofu.org/install-opentofu.sh -O install-opentofu.sh && \
+  chown op:op install-opentofu.sh && chmod 700 install-opentofu.sh && \
+  ./install-opentofu.sh --install-method standalone && \
+  rm install-opentofu.sh
 
-# RUN wget --secure-protocol=TLSv1_2 --https-only https://get.opentofu.org/install-opentofu.sh -O install-opentofu.sh && \
-#   chown op:op install-opentofu.sh && chmod 700 install-opentofu.sh && \
-#   ./install-opentofu.sh --install-method standalone && \
-#   rm install-opentofu.sh
+# SOPS
+RUN curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 && \
+ mv sops-v3.8.1.linux.amd64 /home/op/.local/bin/sops
 
-# # SOPS
-# RUN curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 && \
-#  mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
+# KUBECTL
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" && \
+ echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c && \
+ install -o op -g op -m 0750 kubectl /home/op/.local/bin/kubectl && \
+ /home/op/.local/bin/kubectl version --client
 
-# # KUBECTL
-# RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-#  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256" && \
-#  echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c && \
-#  install -o op -g op -m 0750 kubectl /usr/local/bin/kubectl && \
-#  kubectl version --client
+RUN chown -R op:op /home/op/.local
+COPY packages/ /tmp/packages
+RUN /tmp/packages/install_packages
 
-# # Oracle Cloud
-# RUN wget --https-only https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh -O install-oci.sh && \
-#   chmod +x ./install-oci.sh && \
-#   ./install-oci.sh --accept-all-defaults && \
-#   rm install-oci.sh
+USER op
+# OHMYZSH install
+
+RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting && \
+git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
 
 COPY dotfiles/ /home/op
 
-USER op
+RUN pipx install git+https://github.com/RhinoSecurityLabs/pacu.git oci_cli
 
-# OHMYZSH install
-
-# RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
-#   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting && \
-#   git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-
-# RUN pipx install git+https://github.com/RhinoSecurityLabs/pacu.git
-
-# FROM CTF as CONFIG_CTF
+CMD [ "zsh" ]

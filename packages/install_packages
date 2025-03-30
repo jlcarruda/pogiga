@@ -1,0 +1,6 @@
+#!/bin/bash
+
+dpkg -i /tmp/packages/ripgrep_14.1.0-1_amd64.deb
+
+# Cleanup
+rm -rf /tmp/packages
